@@ -1,63 +1,64 @@
 "use client";
 import React, { useState } from "react";
-
+interface ButtonStates {
+  [key: number]: {
+    booked: boolean;
+    time: string;
+  };
+}
 const Calendar = () => {
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const currentDate = new Date();
   const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth());
   const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
   const [showTime, setShowTime] = useState(true);
-  const [book, setBook] = useState(false);
-  const [clickedDate, setClickedDate] = useState(null);
+  const [clickedDate, setClickedDate] = useState<string | null>(null);
+  const [buttonStates, setButtonStates] = useState<ButtonStates>(() => {
+    const initialState: ButtonStates = {};
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    for (let day = 1; day <= daysInMonth; day++) {
+      initialState[day] = { booked: false, time: "8am - 8:30am" };
+    }
+    return initialState;
+  });
 
-  const addTime = (day) => {
+  const addTime = (day: number) => {
     setShowTime(false);
-    const clickedMonth = currentMonth + 1;
-    setClickedDate(`${day}/${clickedMonth}`);
+    setClickedDate(`${day}/${currentMonth + 1}`);
   };
 
   const bookTime = () => {
-    setBook(true);
+    setButtonStates((prevButtonStates) => ({
+      ...prevButtonStates,
+      [parseInt(clickedDate || "")]: {
+        ...prevButtonStates[parseInt(clickedDate || "")],
+        booked: true,
+      },
+    }));
     alert("You are booked");
   };
 
   const reBookTime = () => {
-    setBook(false);
+    setButtonStates((prevButtonStates) => ({
+      ...prevButtonStates,
+      [parseInt(clickedDate || "")]: {
+        ...prevButtonStates[parseInt(clickedDate || "")],
+        booked: false,
+      },
+    }));
     alert("You are unbooked");
   };
 
-  const pickTime = (
-    <div>
-      <div className="card w-96 bg-base-100 shadow-xl pt-10">
-        <div className="card-body">
-          <h2 className="card-title">Time: 8am - 8:30am</h2>
-          <p>
-            You want to book this time on {clickedDate} and month{" "}
-            {currentMonth + 1}?
-          </p>
-          <div className="card-actions justify-end">
-            <button
-              onClick={bookTime}
-              className="btn btn-primary"
-              disabled={book}
-            >
-              {book ? "Booked" : "Book this time"}
-            </button>
-            <br />
-            {book && (
-              <button
-                onClick={reBookTime}
-                className="btn btn-primary"
-                disabled={!book}
-              >
-                {book ? "Change to unbook?" : "Book this time"}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const resetEverything = () => {
+    setButtonStates((prevButtonStates) => ({
+      ...prevButtonStates,
+      [parseInt(clickedDate || "")]: {
+        ...prevButtonStates[parseInt(clickedDate || "")],
+        booked: false,
+      },
+    }));
+    alert("Resetting everything");
+  };
 
   const renderDaysOfWeek = () => {
     return days.map((day) => (
@@ -80,11 +81,15 @@ const Calendar = () => {
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
+      const isBooked = buttonStates[day]?.booked || false;
       calendarDays.push(
         <button
           onClick={() => addTime(day)}
           key={day}
-          className="text-center border border-gray-200 p-2 bg-yellow-200 hover:bg-pink-300"
+          className={`text-center border border-gray-200 p-2  ${
+            isBooked ? "bg-pink-300" : "hover:bg-pink-300"
+          }`}
+          disabled={isBooked}
         >
           {day}
         </button>
@@ -111,6 +116,52 @@ const Calendar = () => {
       return newMonth;
     });
   };
+
+  const pickTime = (
+    <div>
+      <div className="card w-96 bg-base-100 shadow-xl pt-10">
+        <div className="card-body">
+          <h2 className="card-title">Time: 8am - 8:30am</h2>
+          <p>
+            You want to book this time on {clickedDate} and month{" "}
+            {currentMonth + 1}?
+          </p>
+          <div className="card-actions justify-end">
+            <button
+              onClick={bookTime}
+              className="btn btn-primary"
+              disabled={buttonStates[parseInt(clickedDate || "")]?.booked}
+            >
+              {buttonStates[parseInt(clickedDate || "")]?.booked
+                ? "Booked"
+                : "Book this time"}
+            </button>
+            <br />
+            {buttonStates[parseInt(clickedDate || "")]?.booked && (
+              <button
+                onClick={reBookTime}
+                className="btn btn-primary"
+                disabled={!buttonStates[parseInt(clickedDate || "")]?.booked}
+              >
+                {buttonStates[parseInt(clickedDate || "")]?.booked
+                  ? "Change to unbook?"
+                  : "Book this time"}
+              </button>
+            )}
+            {buttonStates[parseInt(clickedDate || "")]?.booked && (
+              <button
+                onClick={resetEverything}
+                className="btn btn-primary"
+                disabled={!buttonStates[parseInt(clickedDate || "")]?.booked}
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-md mx-auto p-4">
