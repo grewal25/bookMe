@@ -1,39 +1,64 @@
 "use client";
 import React, { useState } from "react";
 
-const Calendar: React.FC = () => {
+const Calendar = () => {
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const currentDate = new Date();
   const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth());
   const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
   const [showTime, setShowTime] = useState(true);
   const [book, setBook] = useState(false);
-  //   const [active, setActive] = useState(true);
-  const addTime = () => {
+  const [clickedDate, setClickedDate] = useState(null);
+
+  const addTime = (day) => {
     setShowTime(false);
+    const clickedMonth = currentMonth + 1;
+    setClickedDate(`${day}/${clickedMonth}`);
   };
 
   const bookTime = () => {
     setBook(true);
+    alert("You are booked");
+  };
+
+  const reBookTime = () => {
+    setBook(false);
+    alert("You are unbooked");
   };
 
   const pickTime = (
     <div>
-      <div>
-        <div className="card w-96 bg-base-100 shadow-xl pt-10">
-          <div className="card-body">
-            <h2 className="card-title">Time: 8am - 8:30am</h2>
-            <p>You want to book this time?</p>
-            <div className="card-actions justify-end">
-              <button onClick={bookTime} className="btn btn-primary">
-                Book Me
+      <div className="card w-96 bg-base-100 shadow-xl pt-10">
+        <div className="card-body">
+          <h2 className="card-title">Time: 8am - 8:30am</h2>
+          <p>
+            You want to book this time on {clickedDate} and month{" "}
+            {currentMonth + 1}?
+          </p>
+          <div className="card-actions justify-end">
+            <button
+              onClick={bookTime}
+              className="btn btn-primary"
+              disabled={book}
+            >
+              {book ? "Booked" : "Book this time"}
+            </button>
+            <br />
+            {book && (
+              <button
+                onClick={reBookTime}
+                className="btn btn-primary"
+                disabled={!book}
+              >
+                {book ? "Change to unbook?" : "Book this time"}
               </button>
-            </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
+
   const renderDaysOfWeek = () => {
     return days.map((day) => (
       <div
@@ -57,9 +82,8 @@ const Calendar: React.FC = () => {
     for (let day = 1; day <= daysInMonth; day++) {
       calendarDays.push(
         <button
-          onClick={addTime}
+          onClick={() => addTime(day)}
           key={day}
-          //   disabled={!active}
           className="text-center border border-gray-200 p-2 bg-yellow-200 hover:bg-pink-300"
         >
           {day}
@@ -116,8 +140,6 @@ const Calendar: React.FC = () => {
         {renderCalendarDays()}
       </div>
       <div>{!showTime && <div>{pickTime}</div>}</div>
-      {/* <div>{!showTime && <div>No pick time</div>}</div> */}
-      {/* {!book && !showTime && alert("you are booked")} */}
     </div>
   );
 };
